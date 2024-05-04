@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MVC</title>
+  <style>
+    .title {
+      color: blue;
+      font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+      text-decoration: underline;
+    }
+
+    .buttons-container {
+      display: flex;
+      flex-direction: row;
+      margin-bottom: 0.938rem;
+    }
+
+    .buttons-container>* {
+      margin-left: 0.938rem;
+    }
+
+    .mvc-btn {
+      border: 0.063rem solid black;
+      background-color: rgb(226, 226, 226);
+      color: black;
+      border-radius: 0.313rem;
+      width: fit-content;
+      height: fit-content;
+      padding: 0.188rem;
+      cursor: pointer;
+    }
+
+    .mvc-btn:hover {
+      text-decoration: underline;
+    }
+
+    .mvc-select {
+      width: 12.5rem;
+      height: 9rem;
+      border: none;
+    }
+
+    .mvc-select option {
+      background-color: rgb(226, 226, 226);
+      margin-top: 0.938rem;
+      height: 1.75rem;
+      margin-left: 0.938rem;
+      padding-left: 0.313rem;
+      border-radius: 0.313rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      color: blue;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 class="title">T: MVC - Model, View, Controller</h1>
+  <div class="buttons-container">
+    <button class="mvc-btn add-btn">add one</button>
+    <button class="mvc-btn add-many">add many</button>
+    <button class="mvc-btn delete-selected">delete selected</button>
+    <button class="mvc-btn update-selected">update selected</button>
+    <button class="mvc-btn get-all">get all</button>
+    <button class="mvc-btn delete-all">delete all</button>
+  </div>
+  <select name="animals" class="mvc-select animals" multiple>
+    <option value="kot">kot</option>
+    <option value="pies">pies</option>
+    <option value="krowa">krowa</option>
+  </select>
+  <select name="colors" class="mvc-select colors" multiple>
+    <option value="white">white</option>
+    <option value="black">black</option>
+    <option value="yellow">yellow</option>
+  </select>
+  <select name="added" class="mvc-select added" multiple>
+  </select>
+  <script>
+    const addBtn = document.querySelector('.add-btn')
+    const deleteAllBtn = document.querySelector('.delete-all')
+    const addManyBtn = document.querySelector('.add-many')
+    const deleteSelectedBtn = document.querySelector('.delete-selected')
+    const updateSelectedBtn = document.querySelector('.update-selected')
+    const getAllBtn = document.querySelector('.get-all')
+    const selectAnimals = document.querySelector('.animals')
+    const selectColors = document.querySelector('.colors')
+    const selectAdded = document.querySelector('.added')
+    const fetchPost = async (request, values) => {
+
+      const data = JSON.stringify(values)
+
+
+      const options = {
+        method: "POST",
+        body: data
+      };
+
+      const response = await fetch(request, options)
+      if (!response.ok)
+        return response.status
+      else
+        return await response.json()
+
+
+    }
+    function addedSelectChanges(object) {
+      if (object.animals.length === 0) {
+        selectAdded.innerHTML = ''
+      } else {
+        selectAdded.innerHTML = ''
+        for (let i = 0; i < object.animals.length; i++) {
+          const selectAddedOption = document.createElement('option')
+          selectAddedOption.value = object.animals[i].id
+          selectAddedOption.innerText = object.animals[i].name
+          selectAdded.appendChild(selectAddedOption)
+        }
+      }
+    }
+    addBtn.addEventListener("click", async function () {
+      const selectAnimalsValue = selectAnimals.value.length !== 0 ? selectAnimals.value : "default name"
+      const selectColorsValue = selectColors.value.length !== 0 ? selectColors.value : 'default color'
+      console.log(selectAnimals.value, selectColors.value);
+      const x = await fetchPost('/add', {
+        name: selectAnimalsValue,
+        color: selectColorsValue
+      })
+      console.log(x);
+      alert(JSON.stringify(x, null, 5))
+      addedSelectChanges(x)
+    })
+    deleteAllBtn.addEventListener("click", async function () {
+      const x = await fetchPost('/deleteall', {
+        name: "",
+        color: ""
+      })
+      console.log(x);
+      alert(JSON.stringify(x, null, 5))
+      addedSelectChanges(x)
+
+    })
+    addManyBtn.addEventListener("click", async function () {
+      const selectAnimalsValue = selectAnimals.value.length !== 0 ? selectAnimals.value : "default name"
+      const selectColorsValue = selectColors.value.length !== 0 ? selectColors.value : 'default color'
+      console.log(selectAnimals.value, selectColors.value);
+      const x = await fetchPost('/addmany', {
+        name: selectAnimalsValue,
+        color: selectColorsValue
+      })
+      console.log(x);
+      alert(JSON.stringify(x, null, 5))
+      addedSelectChanges(x)
+
+    })
+    deleteSelectedBtn.addEventListener("click", async function () {
+      if (selectAdded.value.length === 0) {
+        alert('Wybierz dodane zwierze')
+      } else {
+        console.log(selectAnimals.value, selectColors.value);
+        const x = await fetchPost('/delete', {
+          id: selectAdded.value
+        })
+        console.log(x);
+        alert(JSON.stringify(x, null, 5))
+        addedSelectChanges(x)
+      }
+
+    })
+    updateSelectedBtn.addEventListener("click", async function () {
+      if (selectAdded.value.length === 0) {
+        alert('Wybierz dodane zwierze')
+      } else {
+        console.log(selectAnimals.value, selectColors.value);
+        const x = await fetchPost('/update', {
+          id: selectAdded.value
+        })
+        console.log(x);
+        alert(JSON.stringify(x, null, 5))
+        addedSelectChanges(x)
+      }
+    })
+    getAllBtn.addEventListener("click", async function () {
+      const x = await fetchPost('/getall', {
+      })
+      console.log(x);
+      alert(JSON.stringify(x, null, 5))
+      addedSelectChanges(x)
+    })
+  </script>
+</body>
+
+</html>
